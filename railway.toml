@@ -1,0 +1,25 @@
+# Railway deployment config. See https://docs.railway.app/reference/config-as-code
+#
+# Two services are expected in the Railway project:
+#   1. "web"  — runs the Flask app via gunicorn (this config).
+#   2. "cron" — separate service with rootless schedule, see docs/DEPLOY.md.
+#
+# DATABASE_URL, ODDS_API_KEY, SECRET_KEY, FLASK_ENV=production must be set
+# as environment variables in the Railway dashboard. Never commit them.
+
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "gunicorn wsgi:app --workers 2 --timeout 60 --log-file -"
+healthcheckPath = "/"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+
+[[deploy.envVarGroups]]
+name = "runtime"
+
+# Run migrations on every deploy. Flask-Migrate / Alembic is idempotent.
+[deploy.predeployCommand]
+command = "flask db upgrade"

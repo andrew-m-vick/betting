@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}500 · Server error{% endblock %}
+{% block content %}
+<div class="card empty-state" style="margin-top: 40px">
+  <h1 style="margin-bottom: 8px">500</h1>
+  <p>Something went wrong on our end. If this keeps happening, it's probably a Neon cold start — try again in a few seconds.</p>
+  <a href="{{ url_for('odds.live_odds') }}" class="btn-primary-link" style="margin-top: 16px">Back to Live Odds</a>
+</div>
+{% endblock %}

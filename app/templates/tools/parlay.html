@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Parlay Simulator{% endblock %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+{% endblock %}
+{% block content %}
+<h1>Parlay Simulator</h1>
+<p class="page-subtitle">Build a hypothetical parlay, see the payout math, and run 10,000 simulated bets to visualize outcome distribution.</p>
+
+<div class="card">
+  <h2>Legs (2-10)</h2>
+  <div id="legs"></div>
+  <div style="display: flex; gap: 10px; margin-top: 12px">
+    <button id="add-leg" class="btn-secondary" type="button">+ Add leg</button>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px">
+    <div class="form-row">
+      <label for="stake">Stake per parlay ($)</label>
+      <input type="number" id="stake" min="1" step="1" value="10">
+    </div>
+    <div class="form-row">
+      <label for="sims">Monte Carlo runs</label>
+      <input type="number" id="sims" min="100" max="100000" step="1000" value="10000">
+    </div>
+  </div>
+  <button id="run-sim" type="button">Simulate</button>
+</div>
+
+<div id="summary-card" class="card" style="display:none">
+  <h2>Summary</h2>
+  <div class="metric-grid">
+    <div class="metric"><div class="label">Sportsbook payout (per $1)</div><div class="value" id="m-book-payout">—</div></div>
+    <div class="metric"><div class="label">True win probability</div><div class="value" id="m-true-prob">—</div></div>
+    <div class="metric"><div class="label">Fair payout (per $1)</div><div class="value" id="m-fair-payout">—</div></div>
+    <div class="metric"><div class="label">House edge <span class="tooltip-help" title="Expected loss per $1 staked given your probability estimates. Parlays compound the vig across legs, which is why they are almost always -EV.">?</span></div><div class="value" id="m-house-edge">—</div></div>
+  </div>
+</div>
+
+<div id="mc-card" class="card" style="display:none">
+  <h2>Monte Carlo: <span id="mc-count"></span> simulated parlays</h2>
+  <div style="height: 300px"><canvas id="mc-chart"></canvas></div>
+  <div class="metric-grid" style="margin-top: 16px">
+    <div class="metric"><div class="label">Mean outcome</div><div class="value" id="m-mean">—</div></div>
+    <div class="metric"><div class="label">Median</div><div class="value" id="m-median">—</div></div>
+    <div class="metric"><div class="label">10th percentile</div><div class="value" id="m-p10">—</div></div>
+    <div class="metric"><div class="label">90th percentile</div><div class="value" id="m-p90">—</div></div>
+    <div class="metric"><div class="label">P(any profit)</div><div class="value" id="m-prob-profit">—</div></div>
+    <div class="metric"><div class="label">P(lose full stake)</div><div class="value" id="m-prob-loss">—</div></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/parlay.js') }}"></script>
+{% endblock %}

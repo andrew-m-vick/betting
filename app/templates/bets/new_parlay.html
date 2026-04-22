@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Log a parlay{% endblock %}
+{% block content %}
+<h1>Log a parlay</h1>
+<p class="page-subtitle">Add 2–10 legs. Combined decimal odds are computed for you on save.</p>
+
+<div class="card">
+  <form method="post" id="parlay-form">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 600px">
+      <div class="form-row">
+        <label for="sportsbook_id">Sportsbook</label>
+        <select name="sportsbook_id" id="sportsbook_id" required>
+          <option value="">— pick one —</option>
+          {% for b in sportsbooks %}<option value="{{ b.id }}">{{ b.display_name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-row">
+        <label for="stake">Stake ($)</label>
+        <input type="number" step="0.01" min="0.01" name="stake" id="stake" required>
+      </div>
+    </div>
+
+    <h2 style="margin-top: 20px">Legs</h2>
+    <div id="legs"></div>
+    <div style="margin-top: 10px; display: flex; gap: 8px">
+      <button type="button" id="add-leg" class="btn-secondary">+ Add leg</button>
+    </div>
+
+    <input type="hidden" name="leg_count" id="leg_count" value="2">
+    <div style="margin-top: 20px">
+      <button type="submit">Log parlay</button>
+      <a href="{{ url_for('bets.index') }}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<template id="leg-tpl">
+  <div class="card" style="background: var(--surface-2); margin-bottom: 10px">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px">
+      <strong class="leg-title">Leg</strong>
+      <button type="button" class="btn-remove remove-leg">Remove</button>
+    </div>
+    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 10px">
+      <div class="form-row">
+        <label>Game</label>
+        <select class="leg-game" required>
+          <option value="">— pick —</option>
+          {% for g in games %}<option value="{{ g.id }}">[{{ g.sport.display_name }}] {{ g.away_team }} @ {{ g.home_team }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Bet type</label>
+        <select class="leg-type">
+          <option value="moneyline">Moneyline</option>
+          <option value="spread">Spread</option>
+          <option value="total">Total</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Side</label>
+        <select class="leg-side"></select>
+      </div>
+      <div class="form-row leg-line-row" style="display:none">
+        <label>Line</label>
+        <input type="number" step="0.5" class="leg-line">
+      </div>
+      <div class="form-row">
+        <label>Odds (American)</label>
+        <input type="number" class="leg-odds" required>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+  const legsEl = document.getElementById("legs");
+  const tpl = document.getElementById("leg-tpl");
+  const MIN = 2, MAX = 10;
+
+  function updateSides(select, type) {
+    const opts = type === "total" ? [["over","Over"],["under","Under"]] : [["home","Home"],["away","Away"]];
+    const prev = select.value;
+    select.innerHTML = "";
+    for (const [v, l] of opts) {
+      const o = document.createElement("option"); o.value = v; o.textContent = l; select.appendChild(o);
+    }
+    if ([...select.options].some(o => o.value === prev)) select.value = prev;
+  }
+
+  function addLeg() {
+    if (legsEl.children.length >= MAX) return;
+    const node = tpl.content.cloneNode(true);
+    const wrap = node.querySelector("div.card");
+    const typeSel = wrap.querySelector(".leg-type");
+    const sideSel = wrap.querySelector(".leg-side");
+    const lineRow = wrap.querySelector(".leg-line-row");
+    updateSides(sideSel, typeSel.value);
+    typeSel.addEventListener("change", () => {
+      updateSides(sideSel, typeSel.value);
+      lineRow.style.display = typeSel.value === "moneyline" ? "none" : "";
+    });
+    wrap.querySelector(".remove-leg").addEventListener("click", () => {
+      if (legsEl.children.length > MIN) { wrap.remove(); relabel(); }
+    });
+    legsEl.appendChild(node);
+    relabel();
+  }
+
+  function relabel() {
+    [...legsEl.children].forEach((row, i) => {
+      row.querySelector(".leg-title").textContent = `Leg ${i + 1}`;
+    });
+    document.getElementById("leg_count").value = legsEl.children.length;
+  }
+
+  document.getElementById("add-leg").addEventListener("click", addLeg);
+  addLeg(); addLeg();
+
+  document.getElementById("parlay-form").addEventListener("submit", (e) => {
+    // Rename all leg field names to leg_<i>_* so the backend can read them.
+    [...legsEl.children].forEach((row, i) => {
+      row.querySelector(".leg-game").name = `leg_${i}_game_id`;
+      row.querySelector(".leg-type").name = `leg_${i}_bet_type`;
+      row.querySelector(".leg-side").name = `leg_${i}_side`;
+      row.querySelector(".leg-line").name = `leg_${i}_line`;
+      row.querySelector(".leg-odds").name = `leg_${i}_odds`;
+    });
+  });
+</script>
+{% endblock %}

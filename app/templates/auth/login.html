@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Log in{% endblock %}
+{% block content %}
+<h1>Log in</h1>
+<form method="post" style="max-width: 400px">
+  <div class="form-row">
+    <label for="email">Email</label>
+    <input type="email" name="email" id="email" value="{{ email or '' }}" required>
+  </div>
+  <div class="form-row">
+    <label for="password">Password</label>
+    <input type="password" name="password" id="password" required>
+  </div>
+  <button type="submit">Log in</button>
+  <p style="margin-top: 16px; color: #9aa0a6">
+    Don't have an account? <a href="{{ url_for('auth.signup') }}" style="color: #3a7dff">Sign up</a>.
+  </p>
+</form>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}My Bets{% endblock %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+{% endblock %}
+{% block content %}
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px">
+  <div>
+    <h1 style="margin-bottom: 4px">My Bets</h1>
+    <p style="color: var(--muted); margin: 0">Track hypothetical or real bets you've logged. Settlement runs when games complete.</p>
+  </div>
+  <div style="display: flex; gap: 8px">
+    <a href="{{ url_for('bets.new') }}" class="btn-primary-link">+ Log bet</a>
+    <a href="{{ url_for('bets.new_parlay') }}" class="btn btn-secondary">+ Log parlay</a>
+  </div>
+</div>
+
+<div class="disclaimer">
+  The app does not place bets with any sportsbook. This is a self-tracking tool for logging and analyzing your picks.
+</div>
+
+{% if not rows %}
+  <div class="card empty-state">
+    No bets tracked yet. Start by visiting <a href="{{ url_for('odds.live_odds') }}" style="color: var(--accent)">Live Odds</a> and logging your first bet.
+  </div>
+{% else %}
+  <div class="metric-grid" style="margin-bottom: 20px">
+    <div class="metric"><div class="label">Total bets</div><div class="value">{{ total_bets }}</div></div>
+    <div class="metric"><div class="label">Total staked</div><div class="value">${{ '%.2f'|format(total_staked) }}</div></div>
+    <div class="metric {% if net_pnl > 0 %}positive{% elif net_pnl < 0 %}negative{% endif %}">
+      <div class="label">Net P&amp;L</div>
+      <div class="value">{% if net_pnl >= 0 %}+{% endif %}${{ '%.2f'|format(net_pnl) }}</div>
+    </div>
+    <div class="metric">
+      <div class="label">ROI</div>
+      <div class="value">{% if roi is not none %}{{ '%.1f'|format(roi) }}%{% else %}—{% endif %}</div>
+    </div>
+    <div class="metric">
+      <div class="label">Win rate</div>
+      <div class="value">{% if win_rate is not none %}{{ '%.1f'|format(win_rate * 100) }}%{% else %}—{% endif %}</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Cumulative P&amp;L</h2>
+    <div style="height: 240px"><canvas id="ch-cumulative"></canvas></div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px">
+    <div class="card"><h2>Win rate by sport</h2><div style="height: 220px"><canvas id="ch-sport"></canvas></div></div>
+    <div class="card"><h2>Win rate by bet type</h2><div style="height: 220px"><canvas id="ch-type"></canvas></div></div>
+    <div class="card"><h2>ROI by sportsbook</h2><div style="height: 220px"><canvas id="ch-book"></canvas></div></div>
+  </div>
+
+  <div class="card" style="padding: 0; margin-top: 20px">
+    <div style="padding: 16px 20px; border-bottom: 1px solid var(--border)"><h2 style="margin:0">Bet history</h2></div>
+    <table>
+      <thead>
+        <tr>
+          <th>Placed</th>
+          <th>Game</th>
+          <th>Type</th>
+          <th>Selection</th>
+          <th class="num">Odds</th>
+          <th class="num">Stake</th>
+          <th>Status</th>
+          <th class="num">Payout</th>
+          <th class="num">P&amp;L</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+          <tr>
+            <td style="color:var(--muted); font-size: 0.85em">{{ r.bet.placed_at.strftime('%m/%d %H:%M') }}</td>
+            <td>
+              {% if r.bet.bet_type == 'parlay' %}
+                <details>
+                  <summary style="cursor: pointer">{{ r.bet.legs|length }}-leg parlay</summary>
+                  <ul style="margin: 6px 0 0 0; padding-left: 16px; color: var(--muted); font-size: 0.88em">
+                    {% for label in r.leg_labels %}<li>{{ label }}</li>{% endfor %}
+                  </ul>
+                </details>
+              {% elif r.bet.game %}
+                {{ r.bet.game.away_team }} @ {{ r.bet.game.home_team }}
+                <div style="color:var(--muted); font-size: 0.82em">{{ r.bet.game.sport.display_name }}</div>
+              {% endif %}
+            </td>
+            <td style="text-transform: capitalize">{{ r.bet.bet_type }}</td>
+            <td>{{ r.label }}</td>
+            <td class="num">{{ r.bet.odds_at_bet }}</td>
+            <td class="num">${{ '%.2f'|format(r.bet.stake) }}</td>
+            <td>
+              {% if r.bet.status == 'won' %}<span style="color: var(--positive); font-weight: 600">Won</span>
+              {% elif r.bet.status == 'lost' %}<span style="color: var(--negative); font-weight: 600">Lost</span>
+              {% elif r.bet.status == 'push' %}<span style="color: var(--muted)">Push</span>
+              {% else %}<span style="color: var(--warn)">Pending</span>{% endif %}
+            </td>
+            <td class="num">{% if r.bet.payout is not none %}${{ '%.2f'|format(r.bet.payout) }}{% else %}—{% endif %}</td>
+            <td class="num" style="color: {% if r.pnl and r.pnl > 0 %}var(--positive){% elif r.pnl and r.pnl < 0 %}var(--negative){% else %}var(--muted){% endif %}">
+              {% if r.pnl is not none %}{% if r.pnl >= 0 %}+{% endif %}${{ '%.2f'|format(r.pnl) }}{% else %}—{% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if rows %}
+<script src="{{ url_for('static', filename='js/my_bets.js') }}"></script>
+{% endif %}
+{% endblock %}

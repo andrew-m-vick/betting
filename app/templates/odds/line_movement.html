@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Line Movement{% endblock %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+{% endblock %}
+{% block content %}
+<h1>Line Movement</h1>
+<p class="page-subtitle">How odds have moved across sportsbooks over time. Data accumulates as the cron captures snapshots — history starts when ingestion started.</p>
+
+<form method="get" class="filter-bar">
+  <div class="form-row" style="flex: 1">
+    <label for="game_id">Game</label>
+    <select name="game_id" id="game_id" onchange="this.form.submit()">
+      {% if not games %}
+        <option value="">— no games with multiple snapshots yet —</option>
+      {% else %}
+        {% for g in games %}
+          <option value="{{ g.id }}" {% if selected_game and selected_game.id == g.id %}selected{% endif %}>
+            [{{ g.sport.display_name }}] {{ g.away_team }} @ {{ g.home_team }} — {{ g.commence_time.strftime('%m/%d %H:%M UTC') }}
+          </option>
+        {% endfor %}
+      {% endif %}
+    </select>
+  </div>
+</form>
+
+{% if not selected_game %}
+  <div class="card empty-state">
+    No games with line-movement data yet. History accumulates from each cron run — check back as more snapshots are captured.
+  </div>
+{% else %}
+  <div class="card">
+    <h2>{{ selected_game.away_team }} @ {{ selected_game.home_team }}</h2>
+    <div style="color: var(--muted); margin-bottom: 16px">
+      {{ selected_game.sport.display_name }} · {{ selected_game.commence_time.strftime('%a %b %d, %I:%M %p UTC') }}
+    </div>
+
+    <div style="display: flex; gap: 6px; margin-bottom: 12px" id="market-tabs">
+      <button type="button" class="btn-secondary market-tab active" data-market="h2h">Moneyline</button>
+      <button type="button" class="btn-secondary market-tab" data-market="spreads">Spread</button>
+      <button type="button" class="btn-secondary market-tab" data-market="totals">Totals</button>
+    </div>
+
+    <div style="height: 380px; position: relative">
+      <canvas id="lm-chart"></canvas>
+    </div>
+    <div id="lm-empty" class="empty-state" style="display:none">
+      No snapshots for this market yet.<br>
+      <span style="font-size: 0.9em">Line movement data accumulates over time — check back as more snapshots are captured.</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Movement summary</h2>
+    <table id="lm-summary">
+      <thead>
+        <tr>
+          <th>Sportsbook</th>
+          <th>Side</th>
+          <th class="num">Open</th>
+          <th class="num">Latest</th>
+          <th class="num">Movement</th>
+          <th>Direction</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if selected_game %}
+<script>
+  window.__GAME_ID = {{ selected_game.id }};
+  window.__HOME_TEAM = {{ selected_game.home_team|tojson }};
+  window.__AWAY_TEAM = {{ selected_game.away_team|tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/line_movement.js') }}"></script>
+{% endif %}
+{% endblock %}

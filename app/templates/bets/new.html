@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Log a bet{% endblock %}
+{% block content %}
+<h1>Log a bet</h1>
+<p class="page-subtitle">Record a single-game bet (moneyline, spread, or total).</p>
+
+<div class="card" style="max-width: 600px">
+  <form method="post">
+    <div class="form-row">
+      <label for="game_id">Game</label>
+      <select name="game_id" id="game_id" required>
+        <option value="">— pick a game —</option>
+        {% for g in games %}
+          <option value="{{ g.id }}" {% if prefill.game_id == g.id|string %}selected{% endif %}>
+            [{{ g.sport.display_name }}] {{ g.away_team }} @ {{ g.home_team }} — {{ g.commence_time.strftime('%m/%d %H:%M UTC') }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-row">
+      <label for="sportsbook_id">Sportsbook</label>
+      <select name="sportsbook_id" id="sportsbook_id" required>
+        <option value="">— pick a sportsbook —</option>
+      </select>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px">
+      <div class="form-row">
+        <label for="bet_type">Bet type</label>
+        <select name="bet_type" id="bet_type">
+          <option value="moneyline" {% if prefill.bet_type == 'moneyline' %}selected{% endif %}>Moneyline</option>
+          <option value="spread" {% if prefill.bet_type == 'spread' %}selected{% endif %}>Spread</option>
+          <option value="total" {% if prefill.bet_type == 'total' %}selected{% endif %}>Total</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label for="side">Side</label>
+        <select name="side" id="side"></select>
+      </div>
+      <div class="form-row" id="line-row" style="display:none">
+        <label for="line">Line (spread or total)</label>
+        <input type="number" step="0.5" name="line" id="line" value="{{ prefill.line }}">
+      </div>
+      <div class="form-row">
+        <label for="odds">Odds at bet (American)</label>
+        <input type="number" name="odds" id="odds" value="{{ prefill.odds }}" required>
+      </div>
+      <div class="form-row">
+        <label for="stake">Stake ($)</label>
+        <input type="number" step="0.01" min="0.01" name="stake" id="stake" required>
+      </div>
+    </div>
+
+    <button type="submit">Log bet</button>
+    <a href="{{ url_for('bets.index') }}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+
+<script>
+  const BOOKS_BY_GAME = {{ books_by_game|tojson }};
+  const PREFILL_BOOK = "{{ prefill.sportsbook_id }}";
+  const gameEl = document.getElementById("game_id");
+  const bookEl = document.getElementById("sportsbook_id");
+  const typeEl = document.getElementById("bet_type");
+  const sideEl = document.getElementById("side");
+  const lineRow = document.getElementById("line-row");
+
+  function refreshBooks() {
+    const gid = gameEl.value;
+    const books = BOOKS_BY_GAME[gid] || [];
+    bookEl.innerHTML = '<option value="">— pick a sportsbook —</option>';
+    for (const b of books) {
+      const o = document.createElement("option");
+      o.value = b.id; o.textContent = b.name;
+      if (String(b.id) === PREFILL_BOOK) o.selected = true;
+      bookEl.appendChild(o);
+    }
+  }
+  function refreshSides() {
+    const t = typeEl.value;
+    const opts = t === "total" ? [["over","Over"],["under","Under"]] : [["home","Home"],["away","Away"]];
+    const prev = sideEl.value;
+    sideEl.innerHTML = "";
+    for (const [v, l] of opts) {
+      const o = document.createElement("option");
+      o.value = v; o.textContent = l;
+      sideEl.appendChild(o);
+    }
+    const prefill = "{{ prefill.side }}";
+    if ([...sideEl.options].some(o => o.value === prev)) sideEl.value = prev;
+    else if ([...sideEl.options].some(o => o.value === prefill)) sideEl.value = prefill;
+    lineRow.style.display = t === "moneyline" ? "none" : "";
+  }
+  gameEl.addEventListener("change", refreshBooks);
+  typeEl.addEventListener("change", refreshSides);
+  refreshBooks(); refreshSides();
+</script>
+{% endblock %}

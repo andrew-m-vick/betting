@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Sports Betting Analytics{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <header>
+    <a class="brand" href="{{ url_for('odds.live_odds') }}">BETTING · ANALYTICS</a>
+    <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">☰</button>
+    <nav id="nav">
+      <a href="{{ url_for('odds.live_odds') }}" {% if request.endpoint == 'odds.live_odds' %}class="active"{% endif %}>Live Odds</a>
+      <a href="{{ url_for('odds.line_movement') }}" {% if request.endpoint == 'odds.line_movement' %}class="active"{% endif %}>Line Movement</a>
+      <a href="{{ url_for('odds.arbitrage') }}" {% if request.endpoint == 'odds.arbitrage' %}class="active"{% endif %}>Arbitrage</a>
+      <a href="{{ url_for('tools.ev_calculator') }}" {% if request.endpoint == 'tools.ev_calculator' %}class="active"{% endif %}>EV</a>
+      <a href="{{ url_for('tools.parlay_simulator') }}" {% if request.endpoint == 'tools.parlay_simulator' %}class="active"{% endif %}>Parlay</a>
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('bets.index') }}" {% if request.blueprint == 'bets' %}class="active"{% endif %}>My Bets</a>
+      {% endif %}
+      <a href="{{ url_for('main.methodology') }}" {% if request.endpoint == 'main.methodology' %}class="active"{% endif %}>Methodology</a>
+    </nav>
+    <div class="spacer"></div>
+    {% if current_user.is_authenticated %}
+      <span class="user-email">{{ current_user.email }}</span>
+      <form method="post" action="{{ url_for('auth.logout') }}">
+        <button type="submit" class="btn-secondary">Log out</button>
+      </form>
+    {% else %}
+      <a href="{{ url_for('auth.login') }}">Log in</a>
+      <a href="{{ url_for('auth.signup') }}" class="btn-primary-link">Sign up</a>
+    {% endif %}
+  </header>
+  <main>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer>
+    <div>
+      Sports Betting Analytics · Portfolio project ·
+      <a href="{{ url_for('main.methodology') }}">Methodology</a> ·
+      <a href="https://github.com/" rel="noopener">GitHub</a>
+    </div>
+    <div class="footer-disclaimer">For entertainment and educational purposes. This site does not place bets.</div>
+  </footer>
+  <script>
+    const toggle = document.getElementById("nav-toggle");
+    if (toggle) toggle.addEventListener("click", () => document.getElementById("nav").classList.toggle("open"));
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

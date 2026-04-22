@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Live Odds{% endblock %}
+{% block content %}
+<h1>Live Odds</h1>
+<p class="page-subtitle">Latest odds from tracked sportsbooks for upcoming games. Best moneyline per side highlighted.</p>
+
+<form class="filter-bar" method="get">
+  <div class="form-row">
+    <label for="sport">Sport</label>
+    <select name="sport" id="sport" multiple size="1" style="min-width: 140px">
+      {% for s in sports %}
+        <option value="{{ s.id }}" {% if s.id in selected_sports %}selected{% endif %}>{{ s.display_name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-row">
+    <label for="book">Sportsbooks</label>
+    <select name="book" id="book" multiple size="1" style="min-width: 160px">
+      {% for b in sportsbooks %}
+        <option value="{{ b.id }}" {% if b.id in selected_books %}selected{% endif %}>{{ b.display_name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="form-row">
+    <label for="from">From</label>
+    <input type="date" name="from" id="from" value="{{ date_from }}">
+  </div>
+  <div class="form-row">
+    <label for="to">To</label>
+    <input type="date" name="to" id="to" value="{{ date_to }}">
+  </div>
+  <div class="form-row">
+    <label for="sort">Sort by</label>
+    <select name="sort" id="sort">
+      <option value="time" {% if sort == 'time' %}selected{% endif %}>Commence time</option>
+      <option value="sport" {% if sort == 'sport' %}selected{% endif %}>Sport</option>
+    </select>
+  </div>
+  <button type="submit">Apply</button>
+  <a href="{{ url_for('odds.live_odds') }}" class="btn btn-secondary">Reset</a>
+</form>
+
+{% if not grouped %}
+  <div class="card empty-state">
+    No upcoming games with fresh odds.<br>
+    Run <code>python scripts/refresh_odds.py</code> to pull the latest.
+  </div>
+{% endif %}
+
+{% for g in grouped %}
+  <div class="game">
+    <div class="game-header">
+      <span class="sport-tag">{{ g.game.sport.display_name }}</span>
+      <span class="teams">{{ g.game.away_team }} <span style="color:var(--muted)">@</span> {{ g.game.home_team }}</span>
+      <span class="meta">{{ g.game.commence_time.strftime('%a %b %d, %I:%M %p UTC') }}</span>
+      {% if current_user.is_authenticated %}
+        <a href="{{ url_for('bets.new', game_id=g.game.id) }}" class="btn btn-secondary" style="margin-left: auto; font-size: 0.82em">+ Log bet</a>
+      {% endif %}
+    </div>
+
+    {% for market in ['h2h', 'spreads', 'totals'] %}
+      {% set snaps = g.snapshots_by_market.get(market, []) %}
+      {% if snaps %}
+        <div class="market-label">
+          {% if market == 'h2h' %}Moneyline{% elif market == 'spreads' %}Spread{% else %}Totals (O/U){% endif %}
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Sportsbook</th>
+              {% if market == 'totals' %}
+                <th>Line</th><th class="num">Over</th><th class="num">Under</th>
+              {% else %}
+                {% if market == 'spreads' %}<th>Line</th>{% endif %}
+                <th class="num">{{ g.game.away_team }}</th>
+                <th class="num">{{ g.game.home_team }}</th>
+              {% endif %}
+              <th>Captured</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in snaps %}
+              <tr>
+                <td>{{ s.sportsbook.display_name }}</td>
+                {% if market == 'totals' %}
+                  <td>{{ '%.1f'|format(s.spread_or_total) if s.spread_or_total is not none }}</td>
+                  <td class="num">{{ s.home_odds }}</td>
+                  <td class="num">{{ s.away_odds }}</td>
+                {% elif market == 'spreads' %}
+                  <td>{{ s.spread_or_total }}</td>
+                  <td class="num">{{ s.away_odds }}</td>
+                  <td class="num">{{ s.home_odds }}</td>
+                {% else %}
+                  <td class="num">
+                    {% if g.best_away_book_id == s.sportsbook_id %}
+                      <span class="best-odds">{{ s.away_odds }}</span>
+                    {% else %}{{ s.away_odds }}{% endif %}
+                  </td>
+                  <td class="num">
+                    {% if g.best_home_book_id == s.sportsbook_id %}
+                      <span class="best-odds">{{ s.home_odds }}</span>
+                    {% else %}{{ s.home_odds }}{% endif %}
+                  </td>
+                {% endif %}
+                <td style="color:var(--muted)">{{ s.captured_at.strftime('%m/%d %H:%M') }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% endif %}
+    {% endfor %}
+  </div>
+{% endfor %}
+{% endblock %}

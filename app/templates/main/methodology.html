@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Methodology{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true},{left: '$', right: '$', display: false}]})"></script>
+<style>
+  .methodology { max-width: 760px; }
+  .methodology section { margin-bottom: 40px; }
+  .methodology h2 { border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 32px; }
+  .methodology p { color: #c0c5d1; }
+  .methodology code { background: var(--surface-2); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+  .methodology .katex-display { background: var(--surface-2); padding: 12px; border-radius: 6px; margin: 16px 0; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="methodology">
+  <h1>Methodology</h1>
+  <p class="page-subtitle">The math behind every tool on this site, explained and sourced.</p>
+
+  <section>
+    <h2>Implied probability from odds</h2>
+    <p>
+      American odds have two formats. For underdogs (positive), $+150$ means a $100 stake returns $150 in net profit. For favorites (negative), $-120$ means $120 must be risked to win $100. To convert American odds $A$ to decimal odds $d$:
+    </p>
+    $$d = \begin{cases} 1 + \frac{A}{100} & A \geq +100 \\ 1 + \frac{100}{|A|} & A \leq -100 \end{cases}$$
+    <p>
+      The implied probability is $p_{\text{implied}} = 1/d$. Crucially, <strong>book-implied probabilities across a market do not sum to 1</strong>. The excess — typically 2-6% — is the <em>vig</em> (or juice): the sportsbook's margin. If both sides of a coin-flip market are priced at $-110$, the implied sum is $\tfrac{110}{210} + \tfrac{110}{210} \approx 1.048$, a 4.8% vig.
+    </p>
+  </section>
+
+  <section>
+    <h2>Expected value (EV)</h2>
+    <p>
+      Expected value measures the long-run profit of a bet given your honest estimate of its true probability. For a bet with stake $s$, American odds $A$, true win probability $p$, and net profit-if-win $b \cdot s$ (where $b = d - 1$):
+    </p>
+    $$\text{EV} = p \cdot b - (1 - p)$$
+    <p>
+      Positive EV means the bet is profitable in the long run. The hard part is not the math — it's getting $p$ right. Sharp markets are efficient; finding consistently positive EV requires a model, an information edge, or exploiting market-making errors before they close.
+    </p>
+  </section>
+
+  <section>
+    <h2>Kelly criterion</h2>
+    <p>
+      The Kelly criterion gives the fraction of bankroll to wager that maximizes log-wealth growth. For a bet with decimal odds $d$, let $b = d - 1$, $p$ = true win probability, $q = 1 - p$:
+    </p>
+    $$f^* = \frac{bp - q}{b}$$
+    <p>
+      Full Kelly is mathematically optimal but aggressive — the drawdowns are severe even for skilled bettors. Most practitioners use <strong>fractional Kelly</strong> (often quarter Kelly, $f^*/4$) which gives up some growth rate but dramatically reduces variance. If your probability estimate is noisy (as most amateur estimates are), quarter Kelly or even eighth Kelly is more honest.
+    </p>
+    <p>
+      When $f^* \leq 0$ the formula says "don't bet" — this calculator clamps to zero rather than returning a negative fraction.
+    </p>
+  </section>
+
+  <section>
+    <h2>Parlay math</h2>
+    <p>
+      A parlay is a single bet whose outcome depends on <em>all</em> legs winning. Payout multiplier is the product of each leg's decimal odds: $d_{\text{parlay}} = \prod_i d_i$. True probability is the product of true probabilities (assuming independence): $p_{\text{parlay}} = \prod_i p_i$.
+    </p>
+    <p>
+      The house edge compounds with each added leg. If each leg has 5% vig, a 4-leg parlay carries roughly $(1.05)^4 - 1 \approx 21\%$ effective vig. This is why parlays are sold so aggressively and why they're usually negative-EV even when individual legs are fair.
+    </p>
+    <p>
+      <strong>Push handling</strong>: if a leg pushes (tie), it drops from the parlay and the remaining legs are recomputed. If all legs push, the entire parlay pushes. If any leg loses, the entire parlay loses regardless of the others.
+    </p>
+  </section>
+
+  <section>
+    <h2>Arbitrage</h2>
+    <p>
+      A two-way arb exists when the sum of inverse decimal odds across two books is less than 1:
+    </p>
+    $$\frac{1}{d_{\text{A}}} + \frac{1}{d_{\text{B}}} < 1$$
+    <p>
+      The profit rate is $\frac{1}{d_A^{-1} + d_B^{-1}} - 1$. To lock in profit regardless of outcome, split the total stake $S$ as:
+    </p>
+    $$S_A = S \cdot \frac{d_A^{-1}}{d_A^{-1} + d_B^{-1}}, \quad S_B = S \cdot \frac{d_B^{-1}}{d_A^{-1} + d_B^{-1}}$$
+    <p>
+      Real-world arbitrage is rare and has serious practical limits:
+    </p>
+    <ul style="color: #c0c5d1">
+      <li><strong>Lines move fast.</strong> The odds shift between when you see them and when you click bet.</li>
+      <li><strong>Bet limits.</strong> Sportsbooks cap wagers — often low for arb-like accounts.</li>
+      <li><strong>Account restrictions.</strong> Books detect and limit (or ban) arbers. Sustained arb strategies require bankroll across many books and a lot of operational overhead.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Line movement &amp; closing line value (CLV)</h2>
+    <p>
+      Line movement is the change in a market's odds over time. The market is a continuous aggregation of all bettors' information; a line moves when money flows toward one side. The final odds before a game starts — the <em>closing line</em> — are usually the sharpest estimate of the true probability a market can produce.
+    </p>
+    <p>
+      <strong>Closing line value</strong> is the difference between the odds you got and the closing odds. Consistently beating the closing line is the single best signal that you're betting skillfully, more so than short-term win rate (which is noisy) or total P&amp;L (which is sensitive to variance). Professional bettors optimize for CLV almost exclusively.
+    </p>
+  </section>
+
+  <section>
+    <h2>Monte Carlo simulation</h2>
+    <p>
+      The parlay simulator runs 10,000 independent trials of your parlay. For each trial, each leg wins with its specified probability; the parlay wins only if every leg wins. We record the dollar outcome (either $-S$ or $+S(d_{\text{parlay}} - 1)$), then plot the histogram and compute summary statistics.
+    </p>
+    <p>
+      What the distribution shows: even with positive individual-leg probabilities, most parlay trials lose the full stake — which is the compounded house edge in action. The shape is heavily right-skewed. Median outcome is typically far below the mean (if the mean is positive at all).
+    </p>
+    <p>
+      <strong>Limitations.</strong> The simulator assumes independence between legs, which breaks for correlated parlays like same-game parlays. It also assumes your probability estimates are unbiased — if they're systematically off, the simulator lies to you with a straight face.
+    </p>
+  </section>
+</div>
+{% endblock %}

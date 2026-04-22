@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}EV Calculator{% endblock %}
+{% block content %}
+<h1>Expected Value Calculator</h1>
+<p class="page-subtitle">Compare your estimated true probability of an outcome against the sportsbook's implied probability.</p>
+
+<div class="card">
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px">
+    <div class="form-row">
+      <label for="true-prob">Your estimated probability (%) <span class="tooltip-help" title="Your honest estimate of how often this outcome happens. If you don't have a model, this is hard to do well.">?</span></label>
+      <input type="number" id="true-prob" min="0.1" max="99.9" step="0.1" value="55">
+    </div>
+    <div class="form-row">
+      <label for="american-odds">Sportsbook odds (American) <span class="tooltip-help" title="Positive (+150) = net profit on $100. Negative (-120) = amount to risk for $100 profit.">?</span></label>
+      <input type="number" id="american-odds" step="1" value="-110">
+    </div>
+    <div class="form-row">
+      <label for="bankroll">Bankroll ($) <span class="tooltip-help" title="Your total betting bankroll. Kelly sizes bets as a fraction of this.">?</span></label>
+      <input type="number" id="bankroll" min="1" step="10" value="1000">
+    </div>
+    <div class="form-row" id="game-picker-row">
+      <label for="game-picker">Or load live odds <span class="tooltip-help" title="Pick an upcoming game to auto-fill the sportsbook odds.">?</span></label>
+      <select id="game-picker"><option value="">Loading…</option></select>
+    </div>
+  </div>
+
+  <div id="verdict" style="padding: 14px 16px; border-radius: 6px; margin-bottom: 20px; font-weight: 600;"></div>
+
+  <div class="metric-grid">
+    <div class="metric"><div class="label">Implied Probability <span class="tooltip-help" title="What the sportsbook's odds imply, before removing the vig.">?</span></div><div class="value" id="m-implied">—</div></div>
+    <div class="metric"><div class="label">Your Edge <span class="tooltip-help" title="Your probability minus the sportsbook's implied probability.">?</span></div><div class="value" id="m-edge">—</div></div>
+    <div class="metric"><div class="label">EV per $1 staked</div><div class="value" id="m-ev-unit">—</div></div>
+    <div class="metric"><div class="label">EV %</div><div class="value" id="m-ev-pct">—</div></div>
+    <div class="metric"><div class="label">Full Kelly <span class="tooltip-help" title="Mathematically optimal bet size to maximize log-wealth growth. Aggressive in practice.">?</span></div><div class="value" id="m-kelly-full">—</div></div>
+    <div class="metric"><div class="label">Quarter Kelly <span class="tooltip-help" title="More conservative sizing. Recommended for anyone whose probability estimate isn't rigorously modeled.">?</span></div><div class="value" id="m-kelly-quarter">—</div></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/ev.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Arbitrage Finder{% endblock %}
+{% block content %}
+<h1>Arbitrage Finder</h1>
+<p class="page-subtitle">Two-way moneyline opportunities where cross-book odds guarantee a profit.</p>
+
+<div class="disclaimer">
+  <strong>Reality check:</strong> arbitrage in US sports betting is narrow and fleeting. Lines move, sportsbooks impose bet limits, and accounts flagged as arb-only get restricted. Use this as an analytical tool, not a strategy.
+</div>
+
+<form method="get" class="filter-bar">
+  <div class="form-row">
+    <label for="stake">Total stake ($)</label>
+    <input type="number" name="stake" id="stake" value="{{ stake }}" min="1" step="1">
+  </div>
+  <button type="submit">Recalculate</button>
+</form>
+
+{% if not arbs %}
+  <div class="card empty-state">
+    No arbitrage opportunities found in current odds.<br>
+    <span style="font-size: 0.9em">This is normal — true arbs are rare.</span>
+  </div>
+{% else %}
+  <div class="card" style="padding: 0">
+    <table>
+      <thead>
+        <tr>
+          <th>Game</th>
+          <th>Side A (Away)</th>
+          <th>Side B (Home)</th>
+          <th class="num">Profit %</th>
+          <th class="num">Stake A</th>
+          <th class="num">Stake B</th>
+          <th class="num">Guaranteed $</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in arbs %}
+          <tr>
+            <td>
+              <div>{{ r.game.away_team }} @ {{ r.game.home_team }}</div>
+              <div style="color: var(--muted); font-size: 0.82em">
+                {{ r.game.sport.display_name }} · {{ r.game.commence_time.strftime('%m/%d %H:%M UTC') }}
+              </div>
+            </td>
+            <td>{{ r.away_book }} <span style="color:var(--muted)">{{ r.away_odds }}</span></td>
+            <td>{{ r.home_book }} <span style="color:var(--muted)">{{ r.home_odds }}</span></td>
+            <td class="num"><span class="best-odds">{{ '%.2f'|format(r.profit_pct * 100) }}%</span></td>
+            <td class="num">${{ '%.2f'|format(r.stake_away_dollars) }}</td>
+            <td class="num">${{ '%.2f'|format(r.stake_home_dollars) }}</td>
+            <td class="num" style="color: var(--positive)">+${{ '%.2f'|format(r.guaranteed_return) }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endif %}
+{% endblock %}

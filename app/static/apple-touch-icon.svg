@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <!-- Rounded-square background in the app's green -->
+  <rect width="180" height="180" rx="40" fill="#16a34a"/>
+
+  <!-- Subtle radial highlight for depth -->
+  <defs>
+    <radialGradient id="glow" cx="0.3" cy="0.25" r="0.8">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.25"/>
+      <stop offset="60%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="180" height="180" rx="40" fill="url(#glow)"/>
+
+  <!-- Basketball (behind, right) -->
+  <g transform="translate(118 80)">
+    <circle cx="0" cy="0" r="46" fill="#f97316" stroke="#5c1a06" stroke-width="4"/>
+    <path d="M-46 0 L46 0 M0 -46 L0 46" stroke="#5c1a06" stroke-width="3.5" fill="none"/>
+    <path d="M-32.5 -32.5 Q0 0 32.5 -32.5 M-32.5 32.5 Q0 0 32.5 32.5"
+          stroke="#5c1a06" stroke-width="3.5" fill="none"/>
+  </g>
+
+  <!-- Football (in front, left) -->
+  <g transform="translate(68 100) rotate(-25)">
+    <ellipse cx="0" cy="0" rx="54" ry="32" fill="#8b4513" stroke="#3d1f08" stroke-width="4"/>
+    <!-- Laces: single horizontal line + 5 vertical ticks -->
+    <path d="M-30 0 L30 0" stroke="#f5f5f5" stroke-width="5" stroke-linecap="round"/>
+    <path d="M-18 -8 L-18 8 M-9 -10 L-9 10 M0 -11 L0 11 M9 -10 L9 10 M18 -8 L18 8"
+          stroke="#f5f5f5" stroke-width="5" stroke-linecap="round"/>
+  </g>
+</svg>

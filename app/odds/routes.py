@@ -112,6 +112,7 @@ def live_odds():
     date_from = _parse_iso(request.args.get("from"))
     date_to = _parse_iso(request.args.get("to"))
     sort = request.args.get("sort", "time")
+    q = (request.args.get("q") or "").strip().lower()
 
     # Pull ALL upcoming snapshots for counting, then filter for display.
     all_snapshots = latest_snapshots_for_upcoming(
@@ -129,8 +130,18 @@ def live_odds():
             sport_counts[s.game.sport_id] += 1
     total_games = len(seen_games)
 
-    # Filter down to selected sports for actual render.
-    filtered = [s for s in all_snapshots if not sport_ids or s.game.sport_id in sport_ids]
+    # Filter down to selected sports + free-text query.
+    def _matches_q(snap: OddsSnapshot) -> bool:
+        if not q:
+            return True
+        g = snap.game
+        haystack = f"{g.home_team} {g.away_team} {g.sport.display_name} {g.sport.key}".lower()
+        return all(token in haystack for token in q.split())
+
+    filtered = [
+        s for s in all_snapshots
+        if (not sport_ids or s.game.sport_id in sport_ids) and _matches_q(s)
+    ]
     grouped = _group_by_game(filtered)
 
     if sort == "sport":
@@ -148,6 +159,7 @@ def live_odds():
         date_from=request.args.get("from", ""),
         date_to=request.args.get("to", ""),
         sort=sort,
+        q=q,
     )
 
 
@@ -181,6 +193,43 @@ def upcoming_json():
             }
         )
     return jsonify(payload)
+
+
+# ---------- Search autocomplete ----------
+
+
+@odds_bp.route("/search.json")
+def search_json():
+    """Fuzzy-ish text search across upcoming games by team, sport, or game name.
+
+    Returns up to 12 matches for the header autocomplete dropdown.
+    """
+    q = (request.args.get("q") or "").strip().lower()
+    if not q or len(q) < 2:
+        return jsonify([])
+    tokens = q.split()
+    snapshots = latest_snapshots_for_upcoming(market_types=("h2h",))
+    seen: set[int] = set()
+    matches: list[dict] = []
+    for s in snapshots:
+        if s.game_id in seen:
+            continue
+        g = s.game
+        haystack = f"{g.home_team} {g.away_team} {g.sport.display_name} {g.sport.key}".lower()
+        if not all(t in haystack for t in tokens):
+            continue
+        seen.add(g.id)
+        matches.append({
+            "game_id": g.id,
+            "sport": g.sport.display_name,
+            "sport_key": g.sport.key,
+            "home_team": g.home_team,
+            "away_team": g.away_team,
+            "commence_time": g.commence_time.isoformat(),
+        })
+        if len(matches) >= 12:
+            break
+    return jsonify(matches)
 
 
 # ---------- Arbitrage Finder ----------

@@ -4,13 +4,27 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Sports Betting Analytics{% endblock %}</title>
+  <!-- Browser favicon (small, SVG scales to 16/32px) -->
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+  <!-- iOS home-screen icon (iOS rasterizes at 180x180, uses the dedicated bolder SVG) -->
+  <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.svg') }}">
+  <!-- Name shown under the icon when added to iOS home screen -->
+  <meta name="apple-mobile-web-app-title" content="Betting Analytics">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#16a34a">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
   {% block head %}{% endblock %}
 </head>
 <body>
   <header>
-    <a class="brand" href="{{ url_for('odds.live_odds') }}">BETTING · ANALYTICS</a>
+    <a class="brand" href="{{ url_for('odds.live_odds') }}">
+      <img src="{{ url_for('static', filename='favicon.svg') }}" alt="" class="brand-icon">
+      <span>BETTING · ANALYTICS</span>
+    </a>
+    <form role="search" class="search-wrap" action="{{ url_for('odds.live_odds') }}" method="get" autocomplete="off">
+      <input type="search" name="q" id="site-search" placeholder="Search teams, sports, games…" aria-label="Search">
+      <div id="search-results" class="search-results" hidden></div>
+    </form>
     <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">☰</button>
     <nav id="nav">
       <a href="{{ url_for('odds.live_odds') }}" {% if request.endpoint == 'odds.live_odds' %}class="active"{% endif %}>Live Odds</a>
@@ -46,7 +60,7 @@
     <div>
       Sports Betting Analytics · Portfolio project ·
       <a href="{{ url_for('main.methodology') }}">Methodology</a> ·
-      <a href="https://github.com/" rel="noopener">GitHub</a>
+      <a href="https://github.com/andrew-m-vick/betting" rel="noopener">GitHub</a>
     </div>
     <div class="footer-disclaimer">For entertainment and educational purposes. This site does not place bets.</div>
   </footer>
@@ -54,6 +68,7 @@
     const toggle = document.getElementById("nav-toggle");
     if (toggle) toggle.addEventListener("click", () => document.getElementById("nav").classList.toggle("open"));
   </script>
+  <script src="{{ url_for('static', filename='js/search.js') }}"></script>
   {% block scripts %}{% endblock %}
 </body>
 </html>

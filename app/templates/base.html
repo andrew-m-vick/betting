@@ -4,11 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Sports Betting Analytics{% endblock %}</title>
-  <!-- Browser favicon (small, SVG scales to 16/32px) -->
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
-  <!-- iOS home-screen icon (iOS rasterizes at 180x180, uses the dedicated bolder SVG) -->
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.svg') }}">
-  <!-- Name shown under the icon when added to iOS home screen -->
   <meta name="apple-mobile-web-app-title" content="Betting Analytics">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#16a34a">
@@ -26,27 +23,31 @@
       <div id="search-results" class="search-results" hidden></div>
     </form>
     <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">☰</button>
-    <nav id="nav">
-      <a href="{{ url_for('odds.live_odds') }}" {% if request.endpoint == 'odds.live_odds' %}class="active"{% endif %}>Live Odds</a>
-      <a href="{{ url_for('odds.line_movement') }}" {% if request.endpoint == 'odds.line_movement' %}class="active"{% endif %}>Line Movement</a>
-      <a href="{{ url_for('odds.arbitrage') }}" {% if request.endpoint == 'odds.arbitrage' %}class="active"{% endif %}>Arbitrage</a>
-      <a href="{{ url_for('tools.ev_calculator') }}" {% if request.endpoint == 'tools.ev_calculator' %}class="active"{% endif %}>EV</a>
-      <a href="{{ url_for('tools.parlay_simulator') }}" {% if request.endpoint == 'tools.parlay_simulator' %}class="active"{% endif %}>Parlay</a>
-      {% if current_user.is_authenticated %}
-        <a href="{{ url_for('bets.index') }}" {% if request.blueprint == 'bets' %}class="active"{% endif %}>My Bets</a>
-      {% endif %}
-      <a href="{{ url_for('main.methodology') }}" {% if request.endpoint == 'main.methodology' %}class="active"{% endif %}>Methodology</a>
-    </nav>
-    <div class="spacer"></div>
-    {% if current_user.is_authenticated %}
-      <span class="user-email">{{ current_user.email }}</span>
-      <form method="post" action="{{ url_for('auth.logout') }}">
-        <button type="submit" class="btn-secondary">Log out</button>
-      </form>
-    {% else %}
-      <a href="{{ url_for('auth.login') }}">Log in</a>
-      <a href="{{ url_for('auth.signup') }}" class="btn-primary-link">Sign up</a>
-    {% endif %}
+
+    <div class="nav-panel" id="nav-panel">
+      <nav>
+        <a href="{{ url_for('odds.live_odds') }}" {% if request.endpoint == 'odds.live_odds' %}class="active"{% endif %}>Live Odds</a>
+        <a href="{{ url_for('odds.line_movement') }}" {% if request.endpoint == 'odds.line_movement' %}class="active"{% endif %}>Line Movement</a>
+        <a href="{{ url_for('odds.arbitrage') }}" {% if request.endpoint == 'odds.arbitrage' %}class="active"{% endif %}>Arbitrage</a>
+        <a href="{{ url_for('tools.ev_calculator') }}" {% if request.endpoint == 'tools.ev_calculator' %}class="active"{% endif %}>EV</a>
+        <a href="{{ url_for('tools.parlay_simulator') }}" {% if request.endpoint == 'tools.parlay_simulator' %}class="active"{% endif %}>Parlay</a>
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('bets.index') }}" {% if request.blueprint == 'bets' %}class="active"{% endif %}>My Bets</a>
+        {% endif %}
+        <a href="{{ url_for('main.methodology') }}" {% if request.endpoint == 'main.methodology' %}class="active"{% endif %}>Methodology</a>
+      </nav>
+      <div class="auth-section">
+        {% if current_user.is_authenticated %}
+          <span class="user-email">{{ current_user.email }}</span>
+          <form method="post" action="{{ url_for('auth.logout') }}">
+            <button type="submit" class="btn-secondary">Log out</button>
+          </form>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}" class="auth-link">Log in</a>
+          <a href="{{ url_for('auth.signup') }}" class="btn-primary-link">Sign up</a>
+        {% endif %}
+      </div>
+    </div>
   </header>
   <main>
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -66,7 +67,7 @@
   </footer>
   <script>
     const toggle = document.getElementById("nav-toggle");
-    if (toggle) toggle.addEventListener("click", () => document.getElementById("nav").classList.toggle("open"));
+    if (toggle) toggle.addEventListener("click", () => document.getElementById("nav-panel").classList.toggle("open"));
   </script>
   <script src="{{ url_for('static', filename='js/search.js') }}"></script>
   {% block scripts %}{% endblock %}

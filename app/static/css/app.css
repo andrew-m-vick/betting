@@ -44,6 +44,20 @@ html, body {
 
 /* Shrink any wide form controls so they don't force horizontal scroll on mobile */
 input, select, textarea { max-width: 100%; min-width: 0; }
+
+/* Selects and inputs inside form-rows should fill the row — otherwise
+   native selects size to their longest option (breaking mobile layout
+   for long game-picker strings). */
+.form-row select, .form-row input { width: 100%; }
+.form-row { min-width: 0; }
+
+/* Wide tables (arbitrage, My Bets history) need horizontal scroll on
+   mobile rather than overflowing the viewport. */
+.table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.table-scroll table { min-width: max-content; }
 body {
   background-image: var(--header-glow);
   background-repeat: no-repeat;

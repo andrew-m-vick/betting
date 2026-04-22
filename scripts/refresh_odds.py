@@ -14,8 +14,14 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
+from pathlib import Path
 
-from app import create_app
+# Make the repo root importable regardless of the CWD Railway invokes us
+# from. Without this, `from app import ...` fails because Python only adds
+# the script's own directory (scripts/) to sys.path.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+from app import create_app  # noqa: E402
 from app.extensions import db
 from app.services.ingest import refresh_sport
 from app.services.odds_api import OddsAPIClient, OddsAPIRateLimitError

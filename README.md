@@ -126,9 +126,9 @@ Every Odds API response logs `x-requests-remaining` so quota is always observabl
 ## Honest notes & limitations
 
 - **Line movement data accumulates over time.** History starts when ingestion started — the app does not backfill. Games played before the cron's first run have no movement data.
-- **Arbitrage is rare.** The finder surfaces math opportunities; in practice line movement, bet limits, and account restrictions make US-sports arb fleeting at best.
+- **Arbitrage requires two funded accounts.** No single sportsbook accepts both sides of the same market on one account — the finder surfaces opportunities that require bets at *different* books. Even then, line movement, per-wager limits, and arb-account flagging make US-sports arb fleeting at best. The more practical real-world equivalent is in-game hedging.
 - **Settlement is cron-driven.** Bets on a just-completed game are settled on the next cron run, up to 24 hours later.
-- **No parlay correlation modeling.** Same-game parlays (where legs are dependent) are not handled specially — the Monte Carlo assumes independence.
+- **Parlay simulator assumes independent legs.** Same-game parlays (correlated outcomes) will not be modeled accurately. Legs on opposite sides of the same market always lose in reality and sportsbooks wouldn't accept the ticket anyway — the simulator doesn't currently prevent you from entering them.
 - **Not a sportsbook.** The app is a tracking and analysis tool. It does not place bets with any sportsbook, and any bets logged in My Bets are self-reported.
 
 ## Roadmap (done)

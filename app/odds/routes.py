@@ -104,19 +104,34 @@ def _group_by_game(snapshots: list[OddsSnapshot]) -> list[GameOdds]:
 
 @odds_bp.route("/")
 def live_odds():
-    sport_ids = _parse_ids(request.args.getlist("sport"))
+    # Sport filter is now single-select via pill UI. Accept either a single
+    # `?sport=<id>` or the legacy multi `?sport=<id>&sport=<id>`.
+    raw_sport = request.args.getlist("sport")
+    sport_ids = _parse_ids(raw_sport)
     book_ids = _parse_ids(request.args.getlist("book"))
     date_from = _parse_iso(request.args.get("from"))
     date_to = _parse_iso(request.args.get("to"))
     sort = request.args.get("sort", "time")
 
-    snapshots = latest_snapshots_for_upcoming(
-        sport_ids=sport_ids or None,
+    # Pull ALL upcoming snapshots for counting, then filter for display.
+    all_snapshots = latest_snapshots_for_upcoming(
         sportsbook_ids=book_ids or None,
         start_after=date_from,
         start_before=date_to,
     )
-    grouped = _group_by_game(snapshots)
+    # Per-sport game counts for the pill bar.
+    sport_counts: dict[int, int] = defaultdict(int)
+    seen_games: set[tuple[int, int]] = set()
+    for s in all_snapshots:
+        key = (s.game.sport_id, s.game_id)
+        if key not in seen_games:
+            seen_games.add(key)
+            sport_counts[s.game.sport_id] += 1
+    total_games = len(seen_games)
+
+    # Filter down to selected sports for actual render.
+    filtered = [s for s in all_snapshots if not sport_ids or s.game.sport_id in sport_ids]
+    grouped = _group_by_game(filtered)
 
     if sort == "sport":
         grouped.sort(key=lambda g: (g.game.sport.display_name, g.game.commence_time))
@@ -128,6 +143,8 @@ def live_odds():
         sportsbooks=all_sportsbooks(),
         selected_sports=set(sport_ids),
         selected_books=set(book_ids),
+        sport_counts=dict(sport_counts),
+        total_games=total_games,
         date_from=request.args.get("from", ""),
         date_to=request.args.get("to", ""),
         sort=sort,

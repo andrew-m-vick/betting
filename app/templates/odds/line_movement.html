@@ -9,15 +9,15 @@
 <p class="page-subtitle">How odds have moved across sportsbooks over time. Data accumulates as the cron captures snapshots — history starts when ingestion started.</p>
 
 <form method="get" class="filter-bar">
-  <div class="form-row" style="flex: 1">
-    <label for="game_id">Game</label>
+  <div class="form-row" style="flex: 1; min-width: 300px">
+    <label for="game_id">Pick a game</label>
     <select name="game_id" id="game_id" onchange="this.form.submit()">
       {% if not games %}
         <option value="">— no games with multiple snapshots yet —</option>
       {% else %}
         {% for g in games %}
           <option value="{{ g.id }}" {% if selected_game and selected_game.id == g.id %}selected{% endif %}>
-            [{{ g.sport.display_name }}] {{ g.away_team }} @ {{ g.home_team }} — {{ g.commence_time.strftime('%m/%d %H:%M UTC') }}
+            {{ g.sport.display_name }} · {{ g.away_team }} @ {{ g.home_team }} · {{ g.commence_time.strftime('%b %d, %I:%M%p UTC') }}
           </option>
         {% endfor %}
       {% endif %}

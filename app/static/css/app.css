@@ -262,3 +262,223 @@ footer a:hover { color: var(--text); }
 
 /* Loading shimmer */
 .loading { color: var(--muted); font-style: italic; padding: 16px; }
+
+/* ============ Live Odds redesign ============ */
+
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+/* Sport pill bar */
+.pill-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.88em;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+.pill:hover { background: var(--surface-2); border-color: var(--muted); }
+.pill.active {
+  background: var(--accent);
+  color: #0b0d12;
+  border-color: var(--accent);
+}
+.pill.active .pill-count {
+  background: rgba(11, 13, 18, 0.25);
+  color: #0b0d12;
+}
+.pill.muted { opacity: 0.45; }
+.pill-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 6px;
+  background: var(--bg);
+  border-radius: 10px;
+  font-size: 0.78em;
+  font-weight: 600;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Sport accent colors — left border on game cards + pill dot */
+.sport-americanfootball_nfl     { --sport-color: #22c55e; }
+.sport-basketball_nba           { --sport-color: #f97316; }
+.sport-baseball_mlb             { --sport-color: #3b82f6; }
+.sport-icehockey_nhl            { --sport-color: #06b6d4; }
+.sport-americanfootball_ncaaf   { --sport-color: #eab308; }
+.sport-basketball_ncaab         { --sport-color: #a855f7; }
+.sport-soccer_usa_mls           { --sport-color: #10b981; }
+
+.pill.sport-americanfootball_nfl::before,
+.pill.sport-basketball_nba::before,
+.pill.sport-baseball_mlb::before,
+.pill.sport-icehockey_nhl::before,
+.pill.sport-americanfootball_ncaaf::before,
+.pill.sport-basketball_ncaab::before,
+.pill.sport-soccer_usa_mls::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--sport-color, var(--muted));
+}
+.pill.active::before { display: none; }
+
+/* Collapsible secondary filters */
+.filter-details {
+  margin-bottom: 20px;
+}
+.filter-details summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 0.88em;
+  padding: 8px 0;
+  user-select: none;
+  list-style: none;
+}
+.filter-details summary::-webkit-details-marker { display: none; }
+.filter-details summary::before {
+  content: "▸ ";
+  display: inline-block;
+  transition: transform 0.2s;
+}
+.filter-details[open] summary::before { transform: rotate(90deg); }
+.filter-details summary:hover { color: var(--text); }
+.filter-badge {
+  display: inline-block;
+  padding: 1px 8px;
+  background: var(--accent);
+  color: #0b0d12;
+  border-radius: 999px;
+  font-size: 0.75em;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+/* Horizontal checkbox chips */
+.checkbox-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.checkbox-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.85em;
+  color: var(--text);
+  font-weight: 500;
+  margin: 0;
+}
+.checkbox-pill:has(input:checked) {
+  background: var(--accent);
+  color: #0b0d12;
+  border-color: var(--accent);
+}
+.checkbox-pill input { display: none; }
+
+/* Game card — refreshed */
+.game {
+  border-left: 3px solid var(--sport-color, var(--border));
+}
+.game-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 18px;
+  padding: 16px 20px;
+}
+.sport-tag {
+  background: var(--sport-color, var(--bg)) !important;
+  color: #0b0d12 !important;
+  border: 0 !important;
+  font-weight: 700;
+}
+.teams-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1.3;
+}
+.team-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.team-name {
+  font-size: 1.08em;
+  font-weight: 600;
+  color: var(--text);
+}
+.team-indicator {
+  font-size: 0.68em;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  font-weight: 600;
+}
+.vs-divider {
+  font-size: 0.72em;
+  color: var(--muted);
+  font-weight: 600;
+  padding-left: 2px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.game-meta {
+  text-align: right;
+  color: var(--muted);
+  font-size: 0.85em;
+  font-variant-numeric: tabular-nums;
+}
+.game-meta .time-utc { font-size: 0.9em; opacity: 0.8; }
+
+.btn-small { font-size: 0.78em; padding: 6px 10px; }
+
+/* Odds table */
+.odds-table-wrapper { overflow-x: auto; }
+.odds-table tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.015); }
+.odds-table .book-cell { font-weight: 500; }
+.odds-table .captured { color: var(--muted); font-size: 0.82em; white-space: nowrap; }
+
+.market-label {
+  font-weight: 600;
+  color: var(--text);
+  opacity: 0.85;
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  .game-header {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .game-meta { text-align: left; }
+  .pill { font-size: 0.82em; padding: 6px 12px; }
+  .page-header { flex-direction: column; align-items: stretch; gap: 8px; }
+}

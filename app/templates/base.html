@@ -22,7 +22,7 @@
       <span>BETTING · ANALYTICS</span>
     </a>
     <form role="search" class="search-wrap" action="{{ url_for('odds.live_odds') }}" method="get" autocomplete="off">
-      <input type="search" name="q" id="site-search" placeholder="Search teams, sports, games…" aria-label="Search">
+      <input type="search" name="q" id="site-search" placeholder="Search teams, sports, games…" aria-label="Search" value="{{ request.args.get('q', '') }}">
       <div id="search-results" class="search-results" hidden></div>
     </form>
     <button class="nav-toggle" id="nav-toggle" aria-label="Toggle navigation">☰</button>

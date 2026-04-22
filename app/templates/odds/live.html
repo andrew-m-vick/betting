@@ -13,28 +13,49 @@
   {{- '?' ~ params|join('&') if params else '' -}}
 {% endmacro %}
 
-<div class="page-header">
-  <div>
-    <h1>Live Odds</h1>
-    <p class="page-subtitle">{{ total_games }} upcoming {{ 'game' if total_games == 1 else 'games' }} across tracked sportsbooks. Best moneyline per side highlighted in green.</p>
-  </div>
-</div>
-
-{# -------- Sport pill bar -------- #}
-<div class="pill-bar">
-  <a href="{{ url_for('odds.live_odds') }}{{ qs_sport(none) }}" class="pill {% if not selected_sports %}active{% endif %}">
-    <span>All</span>
-    <span class="pill-count">{{ total_games }}</span>
-  </a>
-  {% for s in sports %}
-    {% set count = sport_counts.get(s.id, 0) %}
-    <a href="{{ url_for('odds.live_odds') }}{{ qs_sport(s.id) }}"
-       class="pill sport-{{ s.key }} {% if s.id in selected_sports %}active{% endif %} {% if count == 0 %}muted{% endif %}">
-      <span>{{ s.display_name }}</span>
-      <span class="pill-count">{{ count }}</span>
+{% if q %}
+  {# -------- Search-results mode: banner instead of pills -------- #}
+  <div class="search-banner">
+    <div class="search-banner-icon" aria-hidden="true">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+    </div>
+    <div class="search-banner-body">
+      <div class="search-banner-title">
+        Results for <span class="search-banner-query">"{{ q }}"</span>
+      </div>
+      <div class="search-banner-sub">
+        {{ grouped|length }} {{ 'game' if grouped|length == 1 else 'games' }} found
+      </div>
+    </div>
+    <a href="{{ url_for('odds.live_odds') }}" class="search-banner-clear" title="Clear search">
+      <span>Clear</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
     </a>
-  {% endfor %}
-</div>
+  </div>
+{% else %}
+  <div class="page-header">
+    <div>
+      <h1>Live Odds</h1>
+      <p class="page-subtitle">{{ total_games }} upcoming {{ 'game' if total_games == 1 else 'games' }} across tracked sportsbooks. Best moneyline per side highlighted in gold.</p>
+    </div>
+  </div>
+
+  {# -------- Sport pill bar -------- #}
+  <div class="pill-bar">
+    <a href="{{ url_for('odds.live_odds') }}{{ qs_sport(none) }}" class="pill {% if not selected_sports %}active{% endif %}">
+      <span>All</span>
+      <span class="pill-count">{{ total_games }}</span>
+    </a>
+    {% for s in sports %}
+      {% set count = sport_counts.get(s.id, 0) %}
+      <a href="{{ url_for('odds.live_odds') }}{{ qs_sport(s.id) }}"
+         class="pill sport-{{ s.key }} {% if s.id in selected_sports %}active{% endif %} {% if count == 0 %}muted{% endif %}">
+        <span>{{ s.display_name }}</span>
+        <span class="pill-count">{{ count }}</span>
+      </a>
+    {% endfor %}
+  </div>
+{% endif %}
 
 {# -------- Secondary filters -------- #}
 <details class="filter-details">
@@ -76,8 +97,13 @@
 
 {% if not grouped %}
   <div class="card empty-state">
-    {% if selected_sports %}
-      No upcoming games for the selected sport. Try <a href="{{ url_for('odds.live_odds') }}">All sports</a>.
+    {% if q %}
+      <div style="font-size: 1.1em; margin-bottom: 8px">No games match "<strong>{{ q }}"</strong>.</div>
+      <div style="color: var(--muted); margin-bottom: 16px">Try a different team name, sport, or abbreviation.</div>
+      <a href="{{ url_for('odds.live_odds') }}" class="btn-primary-link">View all games</a>
+    {% elif selected_sports %}
+      No upcoming games for the selected sport.
+      <div style="margin-top: 12px"><a href="{{ url_for('odds.live_odds') }}" class="btn-primary-link">View all sports</a></div>
     {% else %}
       No upcoming games with fresh odds.
     {% endif %}

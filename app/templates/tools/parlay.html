@@ -7,6 +7,10 @@
 <h1>Parlay Simulator</h1>
 <p class="page-subtitle">Build a hypothetical parlay, see the payout math, and run 10,000 simulated bets to visualize outcome distribution.</p>
 
+<div class="disclaimer">
+  <strong>Assumes independent legs.</strong> The simulator multiplies probabilities as if each leg is independent. In reality, sportsbooks don't accept legs on opposite sides of the same market (it would always lose), and same-game parlays (SGPs) have correlated outcomes that this simulator will overestimate or underestimate. Use the output as an illustration, not a price quote.
+</div>
+
 <div class="card">
   <h2>Legs (2-10)</h2>
   <div id="legs"></div>

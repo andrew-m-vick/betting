@@ -3,16 +3,18 @@
 # DATABASE_URL, ODDS_API_KEY, SECRET_KEY, FLASK_ENV=production, and
 # FLASK_APP=wsgi.py must be set as environment variables in the Railway
 # dashboard. Never commit them.
+#
+# startCommand is intentionally NOT set here: this repo deploys two services
+# in the same Railway project (web + cron) with different start commands.
+# Each service sets its own Custom Start Command in the Railway UI:
+#   web:  gunicorn wsgi:app --workers 2 --timeout 60 --log-file -
+#   cron: python scripts/refresh_odds.py
 
 [build]
 builder = "NIXPACKS"
 
 [deploy]
-# predeployCommand runs after build, before the new release takes traffic.
-# This is where `flask db upgrade` belongs — it needs runtime env vars
-# (DATABASE_URL), which are NOT available at build time.
 predeployCommand = "flask db upgrade"
-startCommand = "gunicorn wsgi:app --workers 2 --timeout 60 --log-file -"
 healthcheckPath = "/"
 healthcheckTimeout = 30
 restartPolicyType = "ON_FAILURE"

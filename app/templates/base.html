@@ -6,8 +6,12 @@
   <title>{% block title %}Sports Betting Analytics{% endblock %}</title>
   <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.svg') }}">
+  <!-- PWA manifest + iOS standalone meta -->
+  <link rel="manifest" href="{{ url_for('main.manifest') }}">
   <meta name="apple-mobile-web-app-title" content="Betting Analytics">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#16a34a">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
   {% block head %}{% endblock %}
@@ -71,5 +75,14 @@
   </script>
   <script src="{{ url_for('static', filename='js/search.js') }}"></script>
   {% block scripts %}{% endblock %}
+  <script>
+    // Register service worker — enables offline + installable PWA.
+    // Served from /service-worker.js (not /static/) so its scope covers the whole origin.
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/service-worker.js").catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>

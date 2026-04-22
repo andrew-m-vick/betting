@@ -1,0 +1,49 @@
+{
+  "name": "Betting Analytics",
+  "short_name": "Betting",
+  "description": "Live odds, EV calculator, parlay simulator, and arbitrage finder across major US sports.",
+  "start_url": "/odds/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0f1c",
+  "theme_color": "#16a34a",
+  "categories": ["sports", "finance", "utilities"],
+  "icons": [
+    {
+      "src": "/static/apple-touch-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Live Odds",
+      "short_name": "Odds",
+      "url": "/odds/",
+      "description": "Current odds across tracked sportsbooks"
+    },
+    {
+      "name": "EV Calculator",
+      "short_name": "EV",
+      "url": "/ev-calculator"
+    },
+    {
+      "name": "Parlay Simulator",
+      "short_name": "Parlay",
+      "url": "/parlay-simulator"
+    },
+    {
+      "name": "My Bets",
+      "short_name": "Bets",
+      "url": "/my-bets/"
+    }
+  ]
+}

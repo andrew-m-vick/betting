@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Offline{% endblock %}
+{% block content %}
+<div class="card empty-state" style="margin-top: 40px">
+  <div style="font-size: 3em; margin-bottom: 8px">📡</div>
+  <h1 style="margin-bottom: 8px">You're offline</h1>
+  <p style="color: var(--muted); max-width: 420px; margin: 0 auto 20px">
+    Connect to the internet to see live odds. Previously-viewed pages remain
+    available in the cache.
+  </p>
+  <a href="{{ url_for('odds.live_odds') }}" class="btn-primary-link">Try again</a>
+</div>
+{% endblock %}

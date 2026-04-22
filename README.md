@@ -6,7 +6,9 @@ Built as a portfolio project to demonstrate backend design, quantitative reasoni
 
 ## Live demo
 
-> Set `LIVE_URL` in the repo settings after deploying; link here.
+**→ [web-production-daac0.up.railway.app](https://web-production-daac0.up.railway.app/)**
+
+Deployed on Railway; odds refreshed daily from a separate Railway cron service. Add it to your iPhone home screen (Share → Add to Home Screen) for the installable app icon.
 
 ## Architecture
 
@@ -57,14 +59,21 @@ Key decisions:
 
 | Route | Description | Auth |
 |---|---|---|
-| `/odds/` | Live Odds across 7 sports, filterable, best-odds highlighting | public |
+| `/odds/` | Live Odds across 7 sports, sport pill filter, best-odds highlighting in gold | public |
+| `/odds/?q=<term>` | Search-results mode with dedicated banner, filters games by team/sport | public |
 | `/odds/line-movement` | Time-series chart of how odds moved across books | public |
 | `/odds/arbitrage` | Cross-book arb scanner with optimal stake split | public |
 | `/ev-calculator` | Expected value + Kelly sizing, live-game odds dropdown | public |
 | `/parlay-simulator` | 2–10 leg parlay with 10k-trial Monte Carlo visualization | public |
-| `/methodology` | Long-form math explainers (EV, Kelly, arb, CLV, Monte Carlo) | public |
+| `/methodology` | Long-form math explainers with KaTeX (EV, Kelly, arb, CLV, Monte Carlo) | public |
 | `/my-bets/` | User bet log, auto-settlement, P&L dashboard with 4 charts | login required |
 | `/auth/signup`, `/auth/login`, `/auth/logout` | Email + bcrypt password auth | — |
+
+**Header search** is available on every page: debounced autocomplete against `/odds/search.json`, with keyboard navigation (↑ ↓ Enter Esc). Matches on team names, sport display names, and sport keys using multi-token AND.
+
+**Design system**: stadium-navy base with field-green primary actions and gold "best odds" markers (separated from P&L green to avoid ambiguity). Per-sport accent colors (NFL green, NBA orange, MLB blue, NHL cyan, NCAAF yellow, NCAAB purple, MLS emerald) appear as the left border on each game card and as the dot on each pill.
+
+**Installable**: dedicated 180×180 `apple-touch-icon.svg` (bolder design for iOS rasterization) plus `apple-mobile-web-app-title` so the home-screen install shows a clean "Betting Analytics" label.
 
 ## Sports & books covered
 
@@ -150,8 +159,9 @@ betting/
 │   │   └── math_utils.py    # odds, EV, Kelly, arb math (mirrored in /static/js)
 │   ├── static/
 │   │   ├── css/app.css
-│   │   ├── js/              # ev.js, parlay.js, line_movement.js, my_bets.js
-│   │   └── favicon.svg
+│   │   ├── js/              # ev.js, parlay.js, line_movement.js, my_bets.js, search.js
+│   │   ├── favicon.svg
+│   │   └── apple-touch-icon.svg
 │   └── templates/           # Jinja templates
 ├── migrations/              # Alembic via Flask-Migrate
 ├── scripts/

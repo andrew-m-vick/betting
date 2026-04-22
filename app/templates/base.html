@@ -42,10 +42,18 @@
       </nav>
       <div class="auth-section">
         {% if current_user.is_authenticated %}
-          <span class="user-email">{{ current_user.email }}</span>
-          <form method="post" action="{{ url_for('auth.logout') }}">
-            <button type="submit" class="btn-secondary">Log out</button>
-          </form>
+          <div class="user-menu" id="user-menu">
+            <button type="button" class="user-avatar" id="user-avatar-btn" aria-haspopup="true" aria-expanded="false" aria-label="Account menu">
+              <span>{{ current_user.email[0]|upper }}</span>
+            </button>
+            <div class="user-dropdown" id="user-dropdown" role="menu">
+              <div class="user-dropdown-label">Signed in as</div>
+              <div class="user-dropdown-email">{{ current_user.email }}</div>
+              <form method="post" action="{{ url_for('auth.logout') }}">
+                <button type="submit" class="user-dropdown-action">Log out</button>
+              </form>
+            </div>
+          </div>
         {% else %}
           <a href="{{ url_for('auth.login') }}" class="auth-link">Log in</a>
           <a href="{{ url_for('auth.signup') }}" class="btn-primary-link">Sign up</a>
@@ -70,8 +78,29 @@
     <div class="footer-disclaimer">For entertainment and educational purposes. This site does not place bets.</div>
   </footer>
   <script>
-    const toggle = document.getElementById("nav-toggle");
-    if (toggle) toggle.addEventListener("click", () => document.getElementById("nav-panel").classList.toggle("open"));
+    const navToggle = document.getElementById("nav-toggle");
+    if (navToggle) navToggle.addEventListener("click", () =>
+      document.getElementById("nav-panel").classList.toggle("open")
+    );
+
+    const avatarBtn = document.getElementById("user-avatar-btn");
+    if (avatarBtn) {
+      const menu = document.getElementById("user-menu");
+      avatarBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const isOpen = menu.classList.toggle("open");
+        avatarBtn.setAttribute("aria-expanded", String(isOpen));
+      });
+      document.addEventListener("click", (e) => {
+        if (!menu.contains(e.target)) {
+          menu.classList.remove("open");
+          avatarBtn.setAttribute("aria-expanded", "false");
+        }
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") menu.classList.remove("open");
+      });
+    }
   </script>
   <script src="{{ url_for('static', filename='js/search.js') }}"></script>
   {% block scripts %}{% endblock %}

@@ -51,7 +51,7 @@ Key decisions:
 - **Backend:** Python 3.11, Flask (app factory + blueprints), SQLAlchemy 2.x, Flask-Migrate (Alembic), Flask-Login, Flask-Bcrypt
 - **Database:** PostgreSQL on Neon (serverless)
 - **External API:** [The Odds API](https://the-odds-api.com/) (free tier)
-- **Frontend:** Server-rendered Jinja templates, Chart.js, KaTeX for math
+- **Frontend:** Server-rendered Jinja templates, Chart.js, KaTeX for math, installable PWA (manifest + service worker)
 - **Testing:** pytest (39 tests, SQLite in-memory, zero external API calls)
 - **Deployment:** Railway (web + cron), gunicorn
 
@@ -73,7 +73,13 @@ Key decisions:
 
 **Design system**: stadium-navy base with field-green primary actions and gold "best odds" markers (separated from P&L green to avoid ambiguity). Per-sport accent colors (NFL green, NBA orange, MLB blue, NHL cyan, NCAAF yellow, NCAAB purple, MLS emerald) appear as the left border on each game card and as the dot on each pill.
 
-**Installable**: dedicated 180×180 `apple-touch-icon.svg` (bolder design for iOS rasterization) plus `apple-mobile-web-app-title` so the home-screen install shows a clean "Betting Analytics" label.
+**Progressive Web App (PWA)**: installable on iOS, Android, and desktop. Ships with:
+- A web app manifest at `/manifest.json` declaring `display: standalone`, start URL, theme color, and four **app shortcuts** (Live Odds, EV, Parlay, My Bets) that appear in iOS/Android long-press menus.
+- A service worker served from `/service-worker.js` (root-scoped via a Flask route so it controls the whole origin, not just `/static/`). Strategy: precache the app shell on install, then network-first with cache fallback for everything else so the site stays fresh online but opens offline from cache.
+- An offline fallback page at `/offline`.
+- Dedicated 180×180 `apple-touch-icon.svg` with bolder strokes that survive iOS's rasterization at home-screen sizes, plus maskable-safe content for Android launchers.
+
+To install: desktop Chrome/Edge shows an install icon in the address bar; iOS Safari → Share → Add to Home Screen.
 
 ## Sports & books covered
 
@@ -161,7 +167,9 @@ betting/
 │   │   ├── css/app.css
 │   │   ├── js/              # ev.js, parlay.js, line_movement.js, my_bets.js, search.js
 │   │   ├── favicon.svg
-│   │   └── apple-touch-icon.svg
+│   │   ├── apple-touch-icon.svg
+│   │   ├── manifest.json    # PWA manifest (served at /manifest.json)
+│   │   └── service-worker.js # served at root /service-worker.js
 │   └── templates/           # Jinja templates
 ├── migrations/              # Alembic via Flask-Migrate
 ├── scripts/
